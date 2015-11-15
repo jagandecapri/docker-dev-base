@@ -1,18 +1,26 @@
-#
-# Ubuntu Dockerfile
-#
-# https://github.com/dockerfile/ubuntu
-#
-
 # Pull base image.
-FROM ubuntu:14.04
+FROM b.gcr.io/tensorflow/tensorflow-full
 
 # This docker image belongs to the community.
 # This docker image has (or will have) more than one "maintainer", comment your information
-# 
+#
 # Tony Ngan <tonynwk919@gmail.com>
 #
 MAINTAINER node-tensorflow
+
+# Download and build TensorFlow.
+WORKDIR /tensorflow
+
+# Add in the source tree
+COPY tensorflow /tensorflow
+
+# Now we build
+RUN bazel clean && \
+    bazel build -c opt tensorflow/tools/pip_package:build_pip_package && \
+    bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/pip && \
+    pip install --upgrade /tmp/pip/tensorflow-*.whl
+
+WORKDIR /root
 
 ENV NODE_VER 4.2.2
 
